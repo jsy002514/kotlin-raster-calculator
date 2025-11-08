@@ -1,4 +1,5 @@
 package io
 
-class GeoTiffReader {
-}
+class GeoTiffReader(
+
+)
