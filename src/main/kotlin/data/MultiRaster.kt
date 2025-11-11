@@ -17,6 +17,7 @@ class MultiRaster(
     val width: Int get() = bands.values.first().width
     val height: Int get() = bands.values.first().height
     val geoTransform: GeoTransform get() = bands.values.first().geoTransform
+    val crs: String get() = bands.values.first().crs
 
     fun getBandNames(): Set<String> = bands.keys
 
