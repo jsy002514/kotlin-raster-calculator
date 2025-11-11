@@ -8,7 +8,7 @@ class MultiRaster(
 
         val firstRaster = bands.values.first()
         require(bands.values.all {
-                    it.width == firstRaster.width &&
+            it.width == firstRaster.width &&
                     it.height == firstRaster.height &&
                     it.crs == firstRaster.crs
         }) { "모든 래스터의 크기 및 좌표계가 동일해야 합니다." }
@@ -21,7 +21,7 @@ class MultiRaster(
 
     fun getBandNames(): Set<String> = bands.keys
 
-    fun getBandByName(name: String): Raster{
+    fun getBandByName(name: String): Raster {
         return bands[name]
             ?: throw IllegalArgumentException("'${name}' 이름의 밴드를 찾을 수 없습니다.")
     }

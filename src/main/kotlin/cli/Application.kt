@@ -14,7 +14,7 @@ class Application(
     private val calculator: RasterCalculator
 ) {
 
-    fun run(){
+    fun run() {
         val scanner = Scanner(System.`in`)
 
         println("래스터 파일을 입력하세요 (예: data/sample.tif):")
@@ -39,16 +39,16 @@ class Application(
         //TODO: 결과 래스터 팝업으로 이미지 출력 기능 구현
     }
 
-    fun main(){
+    fun main() {
         val realReader: RasterReader = GeoTiffReader()
 
         val parser = RasterExpressionParser()
         val calculator = RasterCalculator()
 
-        try{
+        try {
             val app = Application(realReader, parser, calculator)
             app.run()
-        }catch (e: Exception){
+        } catch (e: Exception) {
             println("[ERROR]: ${e.message}")
         }
     }
