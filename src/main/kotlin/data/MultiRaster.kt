@@ -1,31 +1,27 @@
 package data
 
-data class MultiRaster(
-    val rasters: List<Raster>
+class MultiRaster(
+    private val bands: Map<String, Raster>
 ) {
     init {
-        require(rasters.isNotEmpty()) { "하나 이상의 래스터가 필요합니다." }
+        require(bands.isNotEmpty()) { "하나 이상의 밴드가 필요합니다." }
 
-        val first = rasters.first()
-        require(rasters.all {
-            it.width == first.width &&
-                    it.height == first.height &&
-                    it.crs == first.crs
+        val firstRaster = bands.values.first()
+        require(bands.values.all {
+                    it.width == firstRaster.width &&
+                    it.height == firstRaster.height &&
+                    it.crs == firstRaster.crs
         }) { "모든 래스터의 크기 및 좌표계가 동일해야 합니다." }
     }
 
-    val width: Int get() = rasters.first().width
-    val height: Int get() = rasters.first().height
-    val geoTransform: GeoTransform get() = rasters.first().geoTransform
-    val crs: String get() = rasters.first().crs
+    val width: Int get() = bands.values.first().width
+    val height: Int get() = bands.values.first().height
+    val geoTransform: GeoTransform get() = bands.values.first().geoTransform
 
-    fun getBand(index: Int): Raster? = rasters.getOrNull(index - 1)
-    fun addBand(raster: Raster): MultiRaster {
-        return MultiRaster(rasters + raster)
-    }
+    fun getBandNames(): Set<String> = bands.keys
 
-    fun toSingleBand(index: Int): Raster {
-        return getBand(index)
-            ?: throw IllegalArgumentException("해당 인덱스($index)의 밴드가 없습니다.")
+    fun getBandByName(name: String): Raster{
+        return bands[name]
+            ?: throw IllegalArgumentException("'${name}' 이름의 밴드를 찾을 수 없습니다.")
     }
 }

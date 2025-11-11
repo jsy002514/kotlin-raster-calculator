@@ -1,6 +1,6 @@
 package data
 
-data class Raster(
+class Raster(
     val width: Int,
     val height: Int,
     val geoTransform: GeoTransform,
