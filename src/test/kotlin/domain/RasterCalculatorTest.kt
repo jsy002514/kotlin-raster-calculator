@@ -10,7 +10,7 @@ import org.assertj.core.api.Assertions.offset
 
 class RasterCalculatorTest {
 
-    private lateinit var calculator: RasterCalculatorTest
+    private lateinit var calculator: RasterCalculator
     private lateinit var baseGeoTransform: GeoTransform
 
     private fun createMockRaster(width: Int, height: Int, values: List<Float>):Raster{
