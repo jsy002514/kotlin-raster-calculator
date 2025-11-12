@@ -2,9 +2,8 @@ package cli // ⭐️ 1. "cli.MainKt"의 'cli' 부분
 
 import domain.RasterCalculator
 import domain.RasterExpressionParser
-import io.Sentinel2Jp2Reader
+import io.GeotiffReader
 import io.RasterReader
-import org.gdal.gdal.gdal
 import java.io.File
 import java.util.Scanner
 
@@ -54,17 +53,10 @@ class Application(
 }
 
 fun main() {
-    // GDAL 초기화
-    gdal.AllRegister()
-
-    // 드라이버 확인
-    println("GDAL 드라이버 수: ${gdal.GetDriverCount()}")
-    val driver = gdal.GetDriverByName("JP2OpenJPEG")
-    println("JP2OpenJPEG 드라이버: ${driver != null}")
 
     // 1. 실제 의존성(TDD 어려운 객체) 생성
     // ⭐️ GeoTiffReader -> Sentinel2Jp2Reader로 변경
-    val realReader: RasterReader = Sentinel2Jp2Reader()
+    val realReader: RasterReader = GeotiffReader()
 
     // 2. 도메인 서비스(TDD 쉬운 객체) 생성
     val parser = RasterExpressionParser()

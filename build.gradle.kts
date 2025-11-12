@@ -6,6 +6,7 @@ plugins {
 group = "org.example"
 version = "1.0-SNAPSHOT"
 
+
 repositories {
     // 1. JAR 제공 저장소 (OSGeo) – 반드시 앞에!
     maven { url = uri("https://repo.osgeo.org/repository/geotools/") }
@@ -19,32 +20,30 @@ repositories {
     maven { url = uri("https://maven.geo-solutions.it/") }
 }
 
-dependencies {
-    // GeoTools
-    implementation("org.geotools:gt-main:30.1")
-    implementation("org.geotools:gt-geotiff:30.1")
-    implementation("org.geotools:gt-referencing:30.1")
-    implementation("org.geotools:gt-epsg-hsql:30.1")
-    implementation("org.geotools:gt-opengis:27.4.01")
 
-    // gt-coverage – 자동 jai_core 차단
+dependencies {
+    // GeoTools core
+    implementation("org.geotools:gt-main:30.1")
+
+    // 'gt-coverage'가 'jai_core'를 자동으로 가져오지 못하도록 'exclude'로 차단
     implementation("org.geotools:gt-coverage:30.1") {
         exclude(group = "javax.media", module = "jai_core")
     }
 
-    // jai_core – JAR은 OSGeo, POM은 Maven Central
+    // ⭐️ TIF 리더
+    implementation("org.geotools:gt-geotiff:30.1")
+    implementation("org.geotools:gt-referencing:30.1")
+    implementation("org.geotools:gt-epsg-hsql:30.1")
+
+    // 차단한 'jai_core'를 'archive' 저장소에서 직접 가져오도록 수동 추가
     implementation("javax.media:jai_core:1.1.3")
 
-    // (선택) jai_imageio
-    implementation("javax.media:jai_imageio:1.1")
+    // JAI-EXT (Interpolate/Resample에 필요)
+    implementation("it.geosolutions.jaiext.affine:jt-affine:1.1.28")
+    implementation("it.geosolutions.jaiext.algebra:jt-algebra:1.1.28")
 
-    // JAI-EXT
-    implementation("it.geosolutions.jaiext.affine:jt-affine:1.1.29")
-    implementation("it.geosolutions.jaiext.algebra:jt-algebra:1.1.29")
-
-    // ImageIO-Ext
+    // ImageIO-Ext (Tiff 리더 구현체)
     implementation("it.geosolutions.imageio-ext:imageio-ext-tiff:1.4.9")
-    implementation("it.geosolutions.imageio-ext:imageio-ext-gdal-plugin:1.4.9")
 
     // Logging
     implementation("org.slf4j:slf4j-simple:2.0.12")
@@ -55,21 +54,12 @@ dependencies {
     testImplementation("org.assertj:assertj-core:3.25.1")
 }
 
-// ⭐️ [핵심 수정 1]
 application {
     mainClass.set("cli.MainKt")
 }
 
-// ⭐️ [핵심 수정 2]
 tasks.test {
     useJUnitPlatform()
-}
-
-tasks.withType<JavaExec>().configureEach {
-    jvmArgs = listOf(
-        "-Djava.library.path=C:\\OSGeo4W64\\bin",  // GDAL DLL 경로
-        "-Dorg.gdal.home=C:\\OSGeo4W64"            // GDAL_DATA 경로
-    )
 }
 
 kotlin {

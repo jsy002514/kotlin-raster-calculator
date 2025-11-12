@@ -9,7 +9,7 @@ class Sentinel2Jp2ReaderTest {
     @Test
     fun `Sentinel-2 폴더를_읽고_리샘플링해야_한다`() {
 
-        val reader: RasterReader = Sentinel2Jp2Reader(targetResolution = "R10m")
+        val reader: RasterReader = GeotiffReader(targetResolution = "R10m")
 
         val resourceDir = File(ClassLoader.getSystemResource("sentinel_test_data/IMG_DATA").toURI())
 
