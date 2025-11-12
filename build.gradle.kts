@@ -25,7 +25,6 @@ dependencies {
     implementation("org.geotools:gt-geotiff:30.1")
     implementation("org.geotools:gt-referencing:30.1")
     implementation("org.geotools:gt-epsg-hsql:30.1")
-    implementation("org.geotools:gt-jp2k:30.1")
     implementation("org.geotools:gt-opengis:27.4.01")
 
     // gt-coverage – 자동 jai_core 차단
@@ -45,7 +44,7 @@ dependencies {
 
     // ImageIO-Ext
     implementation("it.geosolutions.imageio-ext:imageio-ext-tiff:1.4.9")
-    implementation("com.github.jai-imageio:jai-imageio-core:1.4.0")
+    implementation("it.geosolutions.imageio-ext:imageio-ext-gdal-plugin:1.4.9")
 
     // Logging
     implementation("org.slf4j:slf4j-simple:2.0.12")
@@ -56,12 +55,21 @@ dependencies {
     testImplementation("org.assertj:assertj-core:3.25.1")
 }
 
+// ⭐️ [핵심 수정 1]
 application {
     mainClass.set("cli.MainKt")
 }
 
+// ⭐️ [핵심 수정 2]
 tasks.test {
     useJUnitPlatform()
+}
+
+tasks.withType<JavaExec>().configureEach {
+    jvmArgs = listOf(
+        "-Djava.library.path=C:\\OSGeo4W64\\bin",  // GDAL DLL 경로
+        "-Dorg.gdal.home=C:\\OSGeo4W64"            // GDAL_DATA 경로
+    )
 }
 
 kotlin {

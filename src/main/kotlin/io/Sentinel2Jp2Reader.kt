@@ -6,7 +6,8 @@ import data.Raster
 import org.geotools.coverage.grid.GridCoverage2D
 import org.geotools.coverage.grid.GridGeometry2D
 import org.geotools.coverage.processing.Operations
-import org.geotools.gce.geotiff.GeoTiffReader
+import org.geotools.coverage.grid.io.GridCoverage2DReader
+import org.geotools.coverage.grid.io.GridFormatFinder
 import org.geotools.geometry.jts.ReferencedEnvelope
 import org.geotools.referencing.CRS
 import org.geotools.util.factory.Hints
@@ -14,6 +15,7 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem
 import java.io.File
 import javax.media.jai.Interpolation
 import org.geotools.coverage.processing.operation.Interpolate
+import org.geotools.api.parameter.GeneralParameterValue
 
 class Sentinel2Jp2Reader(
     private val targetResolution: String = "R10m"
@@ -45,8 +47,8 @@ class Sentinel2Jp2Reader(
         val envelope: ReferencedEnvelope = baseCoverage.envelope as ReferencedEnvelope
         val crs = gridGeometry.coordinateReferenceSystem
 
-        val width = gridGeometry.gridRange.high.coordinateValues[0] + 1
-        val height = gridGeometry.gridRange.high.coordinateValues[1] + 1
+        val width = gridGeometry.gridRange.getSpan(0)
+        val height = gridGeometry.gridRange.getSpan(1)
 
         val originX = envelope.minX
         val originY = envelope.maxY
@@ -59,11 +61,21 @@ class Sentinel2Jp2Reader(
     }
 
     private fun readJp2Coverage(file: File): GridCoverage2D {
-        val reader = GeoTiffReader(file, hints)
+        // ⭐️ [이것이 핵심 2] ⭐️
+        // 1. 'GridFormatFinder'를 사용해 파일에 맞는 포맷(JP2)을 찾습니다.
+        val format = GridFormatFinder.findFormat(file)
+            ?: throw IllegalStateException("이 JP2 파일을 읽을 수 있는 포맷을 찾지 못했습니다: ${file.name}")
+
+        // 2. 해당 포맷에서 'Reader'를 가져옵니다.
+        val reader: GridCoverage2DReader = format.getReader(file, hints)
+
         try {
-            return reader.read(null) ?: throw IllegalStateException("JP2 읽기 실패: ${file.name}")
+            // 'read(vararg ...)' 모호성 해결
+            val params = emptyArray<GeneralParameterValue>()
+            return reader.read(*params)
+                ?: throw IllegalStateException("JP2 읽기 실패: ${file.name}")
         } finally {
-            reader.dispose()  // GeoTiffReader는 dispose() 사용
+            reader.dispose() // 모든 리더는 dispose()가 필요
         }
     }
 
@@ -84,9 +96,7 @@ class Sentinel2Jp2Reader(
             width = baseInfo.width,
             height = baseInfo.height,
             geoTransform = baseInfo.geoTransform,
-            // [수정 1] crs.toWKT() -> CRS.toWKT(crs)
             crs = baseInfo.crs.toWKT(),
-            // [수정 2] data = pixels -> values = pixels
             values = pixels
         )
         bandMap[bandName] = raster
@@ -100,7 +110,7 @@ class Sentinel2Jp2Reader(
     }
 
     private fun resampleIfNeeded(coverage: GridCoverage2D, baseInfo: RasterCommonInfo): GridCoverage2D {
-        val sourceWidth = coverage.gridGeometry.gridRange.high.coordinateValues[0] + 1
+        val sourceWidth = coverage.gridGeometry.gridRange.getSpan(0)
         return if (sourceWidth == baseInfo.width) {
             coverage
         } else {
