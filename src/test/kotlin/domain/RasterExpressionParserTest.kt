@@ -16,7 +16,7 @@ class RasterExpressionParserTest {
 
     @Test
     fun `괄호가_포함된_수식을_후위표기법으로_변환한다`(){
-        val expression = "(b03 + b04) / 2"
+        val expression = "( b03 + b04 ) / 2"
         val postfix = parser.parseToPostfix(expression)
         assertThat(postfix).containsExactly("b03","b04","+","2","/")
     }

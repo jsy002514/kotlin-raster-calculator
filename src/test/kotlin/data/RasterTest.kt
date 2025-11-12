@@ -64,7 +64,7 @@ class RasterTest {
     }
 
     @Test
-    fun `래스터_간_나눗셈_시_0으로_나누면_0f를_반환한다`{
+    fun `래스터_간_나눗셈_시_0으로_나누면_0f를_반환한다`(){
         val rasterA = Raster(2, 2, baseGeoTransform, values = listOf(10f, 10f, 10f, 10f))
         val rasterB = Raster(2, 2, baseGeoTransform, values = listOf(2f, 0f, 5f, 0f))
 

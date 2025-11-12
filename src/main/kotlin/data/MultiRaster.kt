@@ -11,7 +11,7 @@ class MultiRaster(
             it.width == firstRaster.width &&
                     it.height == firstRaster.height &&
                     it.crs == firstRaster.crs
-        }) { "모든 래스터의 크기 및 좌표계가 동일해야 합니다." }
+        }) { "모든 밴드의 크기 및 좌표계가 동일해야 합니다." }
     }
 
     val width: Int get() = bands.values.first().width
