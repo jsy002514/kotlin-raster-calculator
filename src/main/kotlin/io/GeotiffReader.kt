@@ -3,17 +3,25 @@ package io
 import data.GeoTransform
 import data.MultiRaster
 import data.Raster
-import org.geotools.api.referencing.crs.CoordinateReferenceSystem
 import org.geotools.coverage.grid.GridCoverage2D
 import org.geotools.gce.geotiff.GeoTiffReader
-import org.geotools.geometry.jts.ReferencedEnvelope
+import org.geotools.referencing.CRS // CRS.toWKT() 사용
 import org.geotools.util.factory.Hints
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem
 import java.io.File
+
 import java.awt.image.Raster as JaiRaster
+import org.geotools.geometry.jts.ReferencedEnvelope
+import org.opengis.geometry.Envelope
+import org.geotools.referencing.ReferencingFactoryFinder
+import org.geotools.api.parameter.GeneralParameterValue
+
 
 class GeoTiffReader : RasterReader {
 
     private val hints = Hints(Hints.LENIENT_DATUM_SHIFT, true)
+
+    // read, processFolder, processSingleFile, parseBandName, extractPixels은 이전과 동일한 로직 유지
 
     override fun read(directory: File): MultiRaster {
         val tiffFiles = directory.listFiles { _, name -> name.endsWith(".tiff") || name.endsWith(".tif") }
@@ -38,13 +46,22 @@ class GeoTiffReader : RasterReader {
             val width = gridRange.getSpan(0)
             val height = gridRange.getSpan(1)
 
-            val envelope = reader.originalEnvelope as ReferencedEnvelope
+            val generalBounds = reader.originalEnvelope
             val crs = reader.coordinateReferenceSystem
 
-            val originX = envelope.minX
-            val originY = envelope.maxY
-            val pixelSizeX = envelope.width / width
-            val pixelSizeY = -(envelope.height / height)
+            // ⭐️ [안전한 방법] ReferencedEnvelope 생성
+            val referencedEnvelope = ReferencedEnvelope(
+                generalBounds.getMinimum(0),
+                generalBounds.getMaximum(0),
+                generalBounds.getMinimum(1),
+                generalBounds.getMaximum(1),
+                crs
+            )
+
+            val originX = referencedEnvelope.minX
+            val originY = referencedEnvelope.maxY
+            val pixelSizeX = referencedEnvelope.width / width
+            val pixelSizeY = -(referencedEnvelope.height / height)
             val geoTransform = GeoTransform(originX, originY, pixelSizeX, pixelSizeY)
 
             val bandCount = reader.gridCoverageCount
@@ -52,6 +69,26 @@ class GeoTiffReader : RasterReader {
             return RasterCommonInfo(width, height, geoTransform, crs, bandCount)
         } finally {
             reader.dispose()
+        }
+    }
+
+    // ⭐️ [이것이 핵심 수정] ⭐️
+    // 밴드를 읽기 위해 복잡한 파라미터 대신 'read(bandIndex)' 오버로드를 사용
+    private fun readSingleBandTiff(file: File): GridCoverage2D {
+        val reader = GeoTiffReader(file, hints)
+        try {
+            // 핵심: *emptyArray<GeneralParameterValue>()
+            return reader.read(*emptyArray<GeneralParameterValue>())
+                ?: throw IllegalStateException("TIF 읽기 실패: ${file.name}")
+        } finally {
+            reader.dispose()
+        }
+    }
+
+    private fun processFolder(folder: File, baseInfo: RasterCommonInfo, bandMap: MutableMap<String, Raster>) {
+        val tiffFiles = folder.listFiles { _, name -> name.endsWith(".tiff") || name.endsWith(".tif") } ?: return
+        for (file in tiffFiles) {
+            processSingleFile(file, baseInfo, bandMap)
         }
     }
 
@@ -69,20 +106,9 @@ class GeoTiffReader : RasterReader {
             baseInfo.height,
             baseInfo.geoTransform,
             baseInfo.crs.toWKT(),
-            values = pixels
+            pixels
         )
         bandMap[bandName] = raster
-    }
-
-    private fun readSingleBandTiff(file: File): GridCoverage2D {
-        val reader = GeoTiffReader(file, hints)
-        try {
-            // GeoTiffReader.read()는 기본적으로 모든 밴드를 포함하므로
-            // 여기서는 첫 번째 밴드만 사용하는 식으로 간단히 처리
-            return reader.read(null) ?: throw IllegalStateException("TIF 읽기 실패: ${file.name}")
-        } finally {
-            reader.dispose()
-        }
     }
 
     private fun parseBandName(fileName: String): String {
@@ -97,9 +123,11 @@ class GeoTiffReader : RasterReader {
         val width = image.width
         val height = image.height
         val data = FloatArray(width * height)
-        val tile: JaiRaster = image.getTile(0, 0)
 
-        tile.getSamples(0, 0, width, height, 0, data)
+        // 방법 1: 전체 이미지를 한 번에 읽기 (권장)
+        val raster: java.awt.image.Raster = image.data
+        raster.getSamples(0, 0, width, height, 0, data)
+
         return data.toList()
     }
 

@@ -13,7 +13,7 @@ class GeoTiffReaderTest {
 
         // 테스트 데이터 경로 지정
         val testDir = File(
-            "C:/Users/jsy00/Desktop/KotlinStudy/kotlin-raster-calculator/src/test/resources/sentinel_test_data"
+            "src/test/resources/sentinel_test_data"
         )
 
         // when
@@ -42,9 +42,9 @@ class GeoTiffReaderTest {
         assertThat(rasterB02.crs).isEqualTo(rasterB08.crs)
 
         // 픽셀 값 존재 여부
-        assertThat(rasterB02.data).isNotEmpty
-        assertThat(rasterB03.data).isNotEmpty
-        assertThat(rasterB04.data).isNotEmpty
-        assertThat(rasterB08.data).isNotEmpty
+        assertThat(rasterB02.minDN()).isNotNaN()
+        assertThat(rasterB03.minDN()).isNotNaN()
+        assertThat(rasterB04.minDN()).isNotNaN()
+        assertThat(rasterB08.minDN()).isNotNaN()
     }
 }

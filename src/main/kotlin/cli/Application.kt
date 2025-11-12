@@ -3,7 +3,7 @@ package cli // ⭐️ 1. "cli.MainKt"의 'cli' 부분
 import domain.RasterCalculator
 import domain.RasterExpressionParser
 import io.RasterReader
-import io.GeoTiffReader
+import io.GeoTiffReader // ⭐️ [수정] 이 줄을 추가합니다.
 import java.io.File
 import java.util.Scanner
 
@@ -20,7 +20,9 @@ class Application(
 
         try {
             // 1. 파일 읽기 (Reader에 위임)
-            println("Sentinel-2 IMG_DATA 폴더 경로를 입력하세요 (예: C:/data/sentinel_test_data/IMG_DATA):")
+            // ⭐️ GeoTiffReader는 디렉토리가 아닌 '단일 파일 경로'를 기대합니다.
+            // (이전 대화에서 TIF 파일 여러 개를 담은 디렉토리로 인터페이스를 수정했으므로, 주석만 수정합니다.)
+            println("GeoTIFF 파일이 포함된 디렉토리 경로를 입력하세요:")
             val filePath = scanner.nextLine()
             val multiRaster = rasterReader.read(File(filePath))
 
@@ -29,7 +31,6 @@ class Application(
 
             // 3. 수식 입력 및 계산 (Parser, Calculator에 위임)
             println("래스터 수식을 입력하세요 (예: (B04 + B03) / (B04 - B03)):")
-            // ⭐️ 프리코스 원칙: 공백을 포함하여 입력받도록 수정
             val expression = scanner.nextLine()
 
             // 3-1. 파싱 (1주차 계산기)
@@ -52,9 +53,12 @@ class Application(
     }
 }
 
+/**
+ * ⭐️ 2. 애플리케이션의 진입점 (Entry Point)
+ */
 fun main() {
-
-    val realReader: RasterReader = GeotiffReader()
+    // ⭐️ [수정] Unresolved reference 해결 (import io.GeoTiffReader)
+    val realReader: RasterReader = GeoTiffReader()
 
     // 2. 도메인 서비스(TDD 쉬운 객체) 생성
     val parser = RasterExpressionParser()
