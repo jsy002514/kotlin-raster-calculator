@@ -29,11 +29,12 @@ dependencies {
     implementation("org.geotools:gt-coverage:30.1") {
         exclude(group = "javax.media", module = "jai_core")
     }
-
+    implementation("org.geotools:gt-opengis:27.4.01")
     // ⭐️ TIF 리더
     implementation("org.geotools:gt-geotiff:30.1")
     implementation("org.geotools:gt-referencing:30.1")
     implementation("org.geotools:gt-epsg-hsql:30.1")
+
 
     // 차단한 'jai_core'를 'archive' 저장소에서 직접 가져오도록 수동 추가
     implementation("javax.media:jai_core:1.1.3")

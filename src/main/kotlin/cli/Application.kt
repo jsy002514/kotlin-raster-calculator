@@ -2,8 +2,8 @@ package cli // ⭐️ 1. "cli.MainKt"의 'cli' 부분
 
 import domain.RasterCalculator
 import domain.RasterExpressionParser
-import io.GeotiffReader
 import io.RasterReader
+import io.GeoTiffReader
 import java.io.File
 import java.util.Scanner
 
@@ -54,8 +54,6 @@ class Application(
 
 fun main() {
 
-    // 1. 실제 의존성(TDD 어려운 객체) 생성
-    // ⭐️ GeoTiffReader -> Sentinel2Jp2Reader로 변경
     val realReader: RasterReader = GeotiffReader()
 
     // 2. 도메인 서비스(TDD 쉬운 객체) 생성
