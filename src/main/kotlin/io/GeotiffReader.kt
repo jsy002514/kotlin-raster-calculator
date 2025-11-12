@@ -5,23 +5,16 @@ import data.MultiRaster
 import data.Raster
 import org.geotools.coverage.grid.GridCoverage2D
 import org.geotools.gce.geotiff.GeoTiffReader
-import org.geotools.referencing.CRS // CRS.toWKT() 사용
 import org.geotools.util.factory.Hints
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem
 import java.io.File
-
-import java.awt.image.Raster as JaiRaster
 import org.geotools.geometry.jts.ReferencedEnvelope
-import org.opengis.geometry.Envelope
-import org.geotools.referencing.ReferencingFactoryFinder
 import org.geotools.api.parameter.GeneralParameterValue
 
 
 class GeoTiffReader : RasterReader {
 
     private val hints = Hints(Hints.LENIENT_DATUM_SHIFT, true)
-
-    // read, processFolder, processSingleFile, parseBandName, extractPixels은 이전과 동일한 로직 유지
 
     override fun read(directory: File): MultiRaster {
         val tiffFiles = directory.listFiles { _, name -> name.endsWith(".tiff") || name.endsWith(".tif") }
@@ -49,7 +42,6 @@ class GeoTiffReader : RasterReader {
             val generalBounds = reader.originalEnvelope
             val crs = reader.coordinateReferenceSystem
 
-            // ⭐️ [안전한 방법] ReferencedEnvelope 생성
             val referencedEnvelope = ReferencedEnvelope(
                 generalBounds.getMinimum(0),
                 generalBounds.getMaximum(0),
@@ -72,12 +64,9 @@ class GeoTiffReader : RasterReader {
         }
     }
 
-    // ⭐️ [이것이 핵심 수정] ⭐️
-    // 밴드를 읽기 위해 복잡한 파라미터 대신 'read(bandIndex)' 오버로드를 사용
     private fun readSingleBandTiff(file: File): GridCoverage2D {
         val reader = GeoTiffReader(file, hints)
         try {
-            // 핵심: *emptyArray<GeneralParameterValue>()
             return reader.read(*emptyArray<GeneralParameterValue>())
                 ?: throw IllegalStateException("TIF 읽기 실패: ${file.name}")
         } finally {
