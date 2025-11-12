@@ -3,5 +3,5 @@ import data.MultiRaster
 import java.io.File
 
 interface RasterReader {
-    fun read(file: File): MultiRaster
+    fun read(directory: File): MultiRaster
 }

@@ -1,10 +1,9 @@
 package cli
 
-import data.MultiRaster
 import domain.RasterCalculator
 import domain.RasterExpressionParser
 import io.RasterReader
-import io.GeoTiffReader
+import io.Sentinel2Jp2Reader
 import java.io.File
 import java.util.Scanner
 
@@ -40,7 +39,7 @@ class Application(
     }
 
     fun main() {
-        val realReader: RasterReader = GeoTiffReader()
+        val realReader: RasterReader = Sentinel2Jp2Reader()
 
         val parser = RasterExpressionParser()
         val calculator = RasterCalculator()
