@@ -93,6 +93,7 @@ bash
 
 ⌨️ CLI 입력 예시
 
+````
 GeoTIFF 파일이 포함된 디렉토리 경로를 입력하세요:
 [USER_INPUT] src/test/resources/sentinel_test_data
 
@@ -106,3 +107,4 @@ GeoTIFF 파일이 포함된 디렉토리 경로를 입력하세요:
 평균(Mean) DN: 0.69266003
 최소(Min) DN: -1.0
 최대(Max) DN: 1.0
+````
